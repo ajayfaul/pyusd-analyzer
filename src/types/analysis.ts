@@ -36,3 +36,17 @@ export interface HistoricalRow {
   transfer_date: { value: string };
   transaction_count: number;
 }
+
+export interface TopTransferRow {
+  date: string;
+  from_address: string;
+  to_address: string;
+  amount: number;
+  transaction_hash: string;
+}
+
+export interface MergedHistoricalRow {
+  date: string;
+  count: number;
+  volume: number | null;
+}

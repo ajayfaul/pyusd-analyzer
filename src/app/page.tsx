@@ -40,7 +40,7 @@ export default function HomePage() {
                 >
                   <ListTree className="h-4 w-4" />
                   <span className="group-data-[state=collapsed]:hidden">
-                    Trace Analyzer
+                    PYUSD Trace Analyzer
                   </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
