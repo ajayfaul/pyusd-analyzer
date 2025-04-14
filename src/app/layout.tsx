@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider"; // Asumsi Anda punya ThemeProvider
+import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarProvider } from "@/components/ui/sidebar"; // <-- Import SidebarProvider
-import { Toaster } from "@/components/ui/sonner"; // <-- Import Toaster
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "PYUSD Analyzer", // Ganti judul jika perlu
+  title: "PYUSD Analyzer",
   description: "Analyze PYUSD transactions with GCP",
 };
 
@@ -28,7 +28,7 @@ export default function RootLayout({
         >
           {/* Bungkus dengan SidebarProvider */}
           <SidebarProvider defaultOpen={true}>{children}</SidebarProvider>
-          <Toaster /> {/* Letakkan Toaster di sini */}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

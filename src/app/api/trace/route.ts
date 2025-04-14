@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { decodeEventLog, parseAbiItem, formatUnits, Hex } from "viem";
-
-// --- Konfigurasi ---
 const PYUSD_CONTRACT_ADDRESS = "0x6c3ea9036406852006290770bedfcaba0e23a0e8";
 const PYUSD_DECIMALS = 6;
 const WETH_CONTRACT_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
@@ -41,9 +39,6 @@ const KNOWN_FUNCTION_SELECTORS: Record<string, string> = {
   "0xd0e30db0": "deposit()",
   "0x2e1a7d4d": "withdraw(uint256)",
 };
-// --- Akhir Konfigurasi ---
-
-// --- Interface Definitions ---
 interface StructLog {
   pc: number;
   op: string;
@@ -92,8 +87,6 @@ interface AnalysisSummary {
   failed: boolean;
   returnValue: string;
 }
-// --- Akhir Interface Definitions ---
-
 function tryDecodeArgsFromStack(
   functionName: string | undefined,
   stack: string[] | undefined,
