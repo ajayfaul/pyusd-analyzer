@@ -150,6 +150,8 @@ The historical dashboard leverages GCP's public BigQuery datasets for Ethereum.
 ## Usage 🚀
 Here are the url of deployed app:  **[PYUSD Analyzer](https://pyusd-analyzer.vercel.app/)**
 
+Video demo: <iframe src="https://player.vimeo.com/1075451942?" width="640" height="360" frameborder="0" allowfullscreen></iframe>
+
 1.  **Navigate:** Use the sidebar menu to switch between "Trace Analyzer" and "Historical Data" views.
 2.  **Trace Analyzer:**
     * Enter a valid Ethereum transaction hash (starting with `0x`) into the input field.
