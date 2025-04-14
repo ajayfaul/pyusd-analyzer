@@ -1,5 +1,5 @@
-// --- File yang Diperbarui: src/components/HistoricalDashboard.tsx ---
-// Deskripsi: Menambahkan Card untuk Top Transfers dan Congestion Chart.
+// --- Updated File: src/components/HistoricalDashboard.tsx ---
+// Description: Added Cards for Top Transfers and Congestion Chart.
 
 "use client";
 
@@ -29,7 +29,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-// Import Chart.js dan wrapper React + elemen yang dibutuhkan (Line, Bar)
+// Import Chart.js and React wrapper + required elements (Line, Bar)
 import { Line, Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -37,27 +37,27 @@ import {
   LinearScale,
   PointElement,
   LineElement,
-  BarElement, // Tambahkan BarElement
+  BarElement, // Add BarElement
   Title as ChartJsTitle,
   Tooltip as ChartJsTooltip,
   Legend,
   Filler,
 } from "chart.js";
 // Import interfaces
-import type { MergedHistoricalRow } from "@/types/analysis"; // Sesuaikan path jika perlu
+import type { MergedHistoricalRow } from "@/types/analysis"; // Adjust path if needed
 
-// Daftarkan elemen Chart.js
+// Register Chart.js elements
 ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
-  BarElement,
+  BarElement, // Add BarElement
   ChartJsTitle,
   ChartJsTooltip,
   Legend,
   Filler
-); // Tambahkan BarElement
+);
 
 // --- Interfaces ---
 interface GasPriceData {
@@ -68,7 +68,7 @@ interface ActiveAddressData {
   date: string;
   active_senders: number;
 }
-// Interface untuk Top Transfers
+// Interface for Top Transfers
 interface TopTransferFormattedRow {
   timestamp: string;
   txHash: string;
@@ -79,14 +79,14 @@ interface TopTransferFormattedRow {
   formattedValue: string | null;
   tokenAddress: string;
 }
-// Interface untuk Congestion
+// Interface for Congestion
 interface CongestionData {
   date: string;
   avg_gas_limit_used_percent: number | null;
 }
-// --- Akhir Interfaces ---
+// --- End Interfaces ---
 
-// Helper components (sama)
+// Helper components (same)
 const EtherscanLink: React.FC<{
   type: "tx" | "address";
   hash: string;
@@ -101,7 +101,7 @@ const EtherscanLink: React.FC<{
       target="_blank"
       rel="noopener noreferrer"
       className={`text-blue-600 hover:underline inline-flex items-center gap-1 ${className}`}
-      title={`Lihat di Etherscan (${type})`}
+      title={`View on Etherscan (${type})`}
     >
       {" "}
       {children || hash} <LinkIcon className="h-3 w-3" />{" "}
@@ -139,7 +139,7 @@ const HexDisplay: React.FC<{
 };
 
 const HistoricalDashboard: React.FC = () => {
-  // State yang sudah ada
+  // Existing state
   const [transferData, setTransferData] = useState<MergedHistoricalRow[]>([]);
   const [isTransferLoading, setIsTransferLoading] = useState<boolean>(true);
   const [transferError, setTransferError] = useState<string | null>(null);
@@ -154,7 +154,7 @@ const HistoricalDashboard: React.FC = () => {
   const [activeAddressError, setActiveAddressError] = useState<string | null>(
     null
   );
-  // State BARU untuk Top Transfers & Congestion
+  // NEW State for Top Transfers & Congestion
   const [topTransferData, setTopTransferData] = useState<
     TopTransferFormattedRow[]
   >([]);
@@ -165,7 +165,7 @@ const HistoricalDashboard: React.FC = () => {
   const [isCongestionLoading, setIsCongestionLoading] = useState<boolean>(true);
   const [congestionError, setCongestionError] = useState<string | null>(null);
 
-  // Generic fetch function (sama)
+  // Generic fetch function (same)
   const fetchData = async <T,>(
     url: string,
     setData: React.Dispatch<React.SetStateAction<T[]>>,
@@ -179,29 +179,29 @@ const HistoricalDashboard: React.FC = () => {
       const response = await fetch(url);
       if (!response.ok) {
         const errorText = await response.text();
-        let errorMessage = `Gagal (${response.status})`;
+        let errorMessage = `Failed (${response.status})`;
         try {
           const errorJson = JSON.parse(errorText);
           if (errorJson.message) errorMessage = errorJson.message;
         } catch (parseError) {
-          errorMessage = errorText || `Gagal (${response.status})`;
+          errorMessage = errorText || `Failed (${response.status})`;
         }
         throw new Error(errorMessage);
       }
       const result = await response.json();
       if (result.type !== expectedType || !result.data) {
-        throw new Error(`Format data ${expectedType} tdk valid.`);
+        throw new Error(`Invalid ${expectedType} data format.`);
       }
       setData(result.data);
     } catch (err: any) {
       console.error(`Error fetching ${url}:`, err);
-      setError(err.message || `Gagal memuat data ${expectedType}.`);
+      setError(err.message || `Failed to load ${expectedType} data.`);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Fetch data (tambahkan fetch untuk top_transfers dan congestion)
+  // Fetch data (add fetch for top_transfers and congestion)
   useEffect(() => {
     fetchData(
       "/api/historical?type=transfers",
@@ -248,6 +248,7 @@ const HistoricalDashboard: React.FC = () => {
     );
   }, []); // Fetch Congestion
 
+  // Loading Skeleton Components
   const LoadingSkeleton = () => (
     <Card>
       <CardHeader>
@@ -273,31 +274,31 @@ const HistoricalDashboard: React.FC = () => {
     </Card>
   );
 
-  // Konfigurasi Chart.js Gas Price (sama)
+  // Chart.js Gas Price Configuration (same)
   const gasChartJsData = {
-    labels: gasData.map((d) => d.date.slice(5)),
+    labels: gasData.map((d) => d.date.slice(5)), // Show only MM-DD
     datasets: [
       {
         label: "Avg Gas (Gwei)",
         data: gasData.map((d) => d.avg_gas_gwei),
-        borderColor: "#2563eb",
+        borderColor: "#2563eb", // blue-600
         backgroundColor: (context: any) => {
           const ctx = context.chart.ctx;
           const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-          gradient.addColorStop(0, "rgba(37, 99, 235, 0.5)");
-          gradient.addColorStop(1, "rgba(37, 99, 235, 0.0)");
+          gradient.addColorStop(0, "rgba(37, 99, 235, 0.5)"); // blue-600 with 50% opacity
+          gradient.addColorStop(1, "rgba(37, 99, 235, 0.0)"); // Transparent
           return gradient;
         },
-        tension: 0.4,
-        fill: true,
-        pointBackgroundColor: "#2563eb",
-        pointBorderColor: "#ffffff",
+        tension: 0.4, // Smooth curves
+        fill: true, // Fill area under the line
+        pointBackgroundColor: "#2563eb", // blue-600
+        pointBorderColor: "#ffffff", // white
         pointRadius: 4,
         pointHoverRadius: 6,
-        pointHoverBackgroundColor: "#1e40af",
-        pointHoverBorderColor: "#ffffff",
+        pointHoverBackgroundColor: "#1e40af", // blue-800
+        pointHoverBorderColor: "#ffffff", // white
         borderWidth: 3,
-        spanGaps: true,
+        spanGaps: true, // Connect lines over null data points
       },
     ],
   };
@@ -305,22 +306,22 @@ const HistoricalDashboard: React.FC = () => {
     responsive: true,
     maintainAspectRatio: false,
     animation: { duration: 1000, easing: "easeInOutQuart" },
-    interaction: { mode: "index", intersect: false },
+    interaction: { mode: "index", intersect: false }, // Show tooltip for all datasets at that index
     plugins: {
-      legend: { display: false },
+      legend: { display: false }, // Hide legend
       tooltip: {
         enabled: true,
-        backgroundColor: "rgba(255, 255, 255, 0.95)",
-        titleColor: "#000000",
-        bodyColor: "#000000",
+        backgroundColor: "rgba(255, 255, 255, 0.95)", // Semi-transparent white
+        titleColor: "#000000", // Black title
+        bodyColor: "#000000", // Black body
         padding: 12,
         boxPadding: 6,
-        borderColor: "rgba(0, 0, 0, 0.1)",
+        borderColor: "rgba(0, 0, 0, 0.1)", // Light gray border
         borderWidth: 1,
         cornerRadius: 8,
         callbacks: {
           title: (tooltipItems: any) =>
-            `Tanggal: ${gasData[tooltipItems[0].dataIndex]?.date}`,
+            `Date: ${gasData[tooltipItems[0].dataIndex]?.date}`, // Full date in title
           label: (tooltipItem: any) =>
             `Avg Gas: ${tooltipItem.formattedValue} Gwei`,
         },
@@ -328,116 +329,116 @@ const HistoricalDashboard: React.FC = () => {
     },
     scales: {
       x: {
-        border: { display: false },
-        grid: { display: false },
+        border: { display: false }, // Hide X-axis line
+        grid: { display: false }, // Hide X-axis grid lines
         ticks: {
-          color: "hsl(var(--foreground))",
+          color: "hsl(var(--foreground))", // Use theme color
           font: { size: 12, weight: "500" },
-          maxRotation: 0,
-          autoSkipPadding: 20,
+          maxRotation: 0, // Prevent label rotation
+          autoSkipPadding: 20, // Add padding for auto-skipping labels
           padding: 8,
         },
       },
       y: {
-        border: { display: false },
-        grid: { color: "hsl(var(--border))" },
+        border: { display: false }, // Hide Y-axis line
+        grid: { color: "hsl(var(--border))" }, // Use theme border color for grid lines
         ticks: {
-          color: "hsl(var(--foreground))",
+          color: "hsl(var(--foreground))", // Use theme color
           font: { size: 12, weight: "500" },
           padding: 8,
-          callback: (value: any) => `${value} Gwei`,
+          callback: (value: any) => `${value} Gwei`, // Add 'Gwei' unit
         },
-        beginAtZero: false,
+        beginAtZero: false, // Start axis near the minimum value
       },
     },
   };
 
-  // Konfigurasi Chart.js Congestion (Baru)
+  // Chart.js Congestion Configuration (New)
   const congestionChartJsData = {
-    labels: congestionData.map((d) => d.date.slice(5)),
+    labels: congestionData.map((d) => d.date.slice(5)), // Show only MM-DD
     datasets: [
       {
         label: "Avg Gas Limit Used (%)",
         data: congestionData.map((d) => d.avg_gas_limit_used_percent),
-        backgroundColor: "#2563eb", // Warna berbeda (misal: chart-4)
-        borderColor: "#2563e1",
+        backgroundColor: "#2563eb", // blue-600 (or use a different color like chart-4 if defined)
+        borderColor: "#2563eb", // blue-600
         borderWidth: 1,
-        borderRadius: 4,
-        barPercentage: 0.6,
-        categoryPercentage: 0.7,
+        borderRadius: 4, // Rounded corners for bars
+        barPercentage: 0.6, // Width of the bar relative to the available space
+        categoryPercentage: 0.7, // Width of the category space for the bar
       },
     ],
   };
   const congestionChartJsOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    animation: { duration: 800 },
+    animation: { duration: 800 }, // Slightly faster animation for bars
     plugins: {
-      legend: { display: false },
+      legend: { display: false }, // Hide legend
       tooltip: {
         enabled: true,
-        backgroundColor: "rgba(255, 255, 255, 0.95)",
-        titleColor: "#000000",
-        bodyColor: "#000000",
+        backgroundColor: "rgba(255, 255, 255, 0.95)", // Semi-transparent white
+        titleColor: "#000000", // Black title
+        bodyColor: "#000000", // Black body
         padding: 12,
         boxPadding: 6,
-        borderColor: "rgba(0, 0, 0, 0.1)",
+        borderColor: "rgba(0, 0, 0, 0.1)", // Light gray border
         borderWidth: 1,
         cornerRadius: 8,
         callbacks: {
           title: (tooltipItems: any) =>
-            `Tanggal: ${congestionData[tooltipItems[0].dataIndex]?.date}`,
+            `Date: ${congestionData[tooltipItems[0].dataIndex]?.date}`, // Full date in title
           label: (tooltipItem: any) =>
-            `Avg Usage: ${tooltipItem.formattedValue}%`,
+            `Avg Usage: ${tooltipItem.formattedValue}%`, // Add '%' unit
         },
       },
     },
     scales: {
       x: {
-        border: { display: false },
-        grid: { display: false },
+        border: { display: false }, // Hide X-axis line
+        grid: { display: false }, // Hide X-axis grid lines
         ticks: {
-          color: "hsl(var(--foreground))",
+          color: "hsl(var(--foreground))", // Use theme color
           font: { size: 12, weight: "500" },
-          maxRotation: 0,
-          autoSkipPadding: 15,
+          maxRotation: 0, // Prevent label rotation
+          autoSkipPadding: 15, // Adjust padding for bar chart labels
           padding: 5,
         },
       },
       y: {
-        border: { display: false },
-        grid: { color: "hsl(var(--border))" },
+        border: { display: false }, // Hide Y-axis line
+        grid: { color: "hsl(var(--border))" }, // Use theme border color for grid lines
         ticks: {
-          color: "hsl(var(--foreground))",
+          color: "hsl(var(--foreground))", // Use theme color
           font: { size: 12, weight: "500" },
           padding: 5,
-          callback: (value: any) => `${value}%`,
+          callback: (value: any) => `${value}%`, // Add '%' unit
         },
-        beginAtZero: true,
-        suggestedMax: 100,
+        beginAtZero: true, // Start Y-axis at 0
+        suggestedMax: 100, // Suggest Y-axis goes up to 100%
       },
     },
   };
-  // --- Akhir Konfigurasi Chart.js Congestion ---
+  // --- End Chart.js Congestion Configuration ---
 
   return (
-    // Gunakan TooltipProvider di level ini
+    // Use TooltipProvider at this level
     <TooltipProvider>
       <div className="container mx-auto px-4 md:px-6 lg:px-8 py-6 max-w-7xl">
-        {/* Layout Grid (2 kolom di md, 3 di lg) */}
+        {/* Grid Layout (2 columns on md, 3 on lg) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-auto">
-          {/* Card Transfer Harian (Span 2 di LG) */}
+          {/* Daily Transfer Card (Span 2 on LG) */}
           <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 md:col-span-1 lg:col-span-2">
             <CardHeader className="border-b border-border/20">
               {" "}
               <CardTitle className="flex items-center gap-2 text-xl font-semibold">
-                Transfer Harian PYUSD
+                Daily PYUSD Transfers
                 <span className="text-sm font-normal text-muted-foreground">
-                  (7 Hari Terakhir)
+                  (Last 7 Days)
                 </span>
               </CardTitle>
               <CardDescription>
-                Jumlah dan volume transaksi transfer PYUSD harian.
+                Daily count and volume of PYUSD transfer transactions.
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
@@ -451,7 +452,7 @@ const HistoricalDashboard: React.FC = () => {
               {transferError && !isTransferLoading && (
                 <Alert variant="destructive" className="animate-in fade-in-50">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error Memuat Data Transfer</AlertTitle>
+                  <AlertTitle>Error Loading Transfer Data</AlertTitle>
                   <AlertDescription>{transferError}</AlertDescription>
                 </Alert>
               )}
@@ -460,9 +461,9 @@ const HistoricalDashboard: React.FC = () => {
                   <Table>
                     <TableHeader>
                       <TableRow className="hover:bg-muted/50">
-                        <TableHead>Tanggal</TableHead>
+                        <TableHead>Date</TableHead>
                         <TableHead className="text-right">
-                          Jumlah Transfer
+                          Transfer Count
                         </TableHead>
                         <TableHead className="text-right">
                           Total Volume (PYUSD)
@@ -498,7 +499,7 @@ const HistoricalDashboard: React.FC = () => {
                             colSpan={3}
                             className="text-center text-muted-foreground h-24"
                           >
-                            Tidak ada data transfer ditemukan.
+                            No transfer data found.
                           </TableCell>
                         </TableRow>
                       )}
@@ -509,22 +510,24 @@ const HistoricalDashboard: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Kartu Average Gas Price */}
+          {/* Average Gas Price Card */}
           <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                Rata-Rata Gas Price (Ethereum)
+                Average Gas Price (Ethereum)
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Rata-rata harga gas harian (Gwei) di jaringan Ethereum.</p>
+                    <p>
+                      Average daily gas price (Gwei) on the Ethereum network.
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               </CardTitle>
               <CardDescription>
-                Indikator biaya transaksi di jaringan Ethereum.
+                Indicator of transaction costs on the Ethereum network.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -532,7 +535,7 @@ const HistoricalDashboard: React.FC = () => {
               {gasError && !isGasLoading && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error Memuat Data Gas</AlertTitle>
+                  <AlertTitle>Error Loading Gas Data</AlertTitle>
                   <AlertDescription>{gasError}</AlertDescription>
                 </Alert>
               )}
@@ -540,31 +543,29 @@ const HistoricalDashboard: React.FC = () => {
                 <div className="h-72" style={{ position: "relative" }}>
                   <Line
                     data={gasChartJsData}
-                    options={gasChartJsOptions as any}
+                    options={gasChartJsOptions as any} // Cast to any to avoid deep type issues
                   />
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Card Active Addresses */}
+          {/* Active Addresses Card */}
           <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                Alamat Pengirim Aktif PYUSD
+                Active PYUSD Senders
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>
-                      Jumlah alamat unik yang mengirimkan PYUSD per hari.
-                    </p>
+                    <p>Number of unique addresses sending PYUSD per day.</p>
                   </TooltipContent>
                 </Tooltip>
               </CardTitle>
               <CardDescription>
-                Pengirim unik PYUSD (7 hari terakhir).
+                Unique PYUSD senders (last 7 days).
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -578,7 +579,7 @@ const HistoricalDashboard: React.FC = () => {
               {activeAddressError && !isActiveAddressLoading && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error Memuat Alamat Aktif</AlertTitle>
+                  <AlertTitle>Error Loading Active Addresses</AlertTitle>
                   <AlertDescription>{activeAddressError}</AlertDescription>
                 </Alert>
               )}
@@ -586,9 +587,9 @@ const HistoricalDashboard: React.FC = () => {
                 <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-muted/50">
-                      <TableHead>Tanggal</TableHead>
+                      <TableHead>Date</TableHead>
                       <TableHead className="text-right">
-                        Jumlah Pengirim Unik
+                        Unique Senders
                       </TableHead>
                     </TableRow>
                   </TableHeader>
@@ -613,7 +614,7 @@ const HistoricalDashboard: React.FC = () => {
                           colSpan={2}
                           className="text-center text-muted-foreground h-24"
                         >
-                          Tidak ada data alamat aktif ditemukan.
+                          No active address data found.
                         </TableCell>
                       </TableRow>
                     )}
@@ -623,26 +624,28 @@ const HistoricalDashboard: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Card BARU untuk Top Transfers (Span 2 di LG) */}
+          {/* NEW Card for Top Transfers (Span 2 on LG) */}
           <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 md:col-span-1 lg:col-span-2">
             <CardHeader>
               <CardTitle className="text-xl font-semibold">
-                Top 10 Transfer PYUSD
+                Top 10 PYUSD Transfers
               </CardTitle>
               <CardDescription>
-                Transfer PYUSD terbesar (7 hari terakhir).
+                Largest PYUSD transfers (last 7 days).
               </CardDescription>
             </CardHeader>
             <CardContent>
-            {isTopTransferLoading && (
+              {isTopTransferLoading && (
                 <div className="space-y-2">
-                  {/* Skeleton rows */} <Skeleton className="h-10 w-full" /> <Skeleton className="h-10 w-full" /> <Skeleton className="h-10 w-full" />
+                  {/* Skeleton rows */} <Skeleton className="h-10 w-full" />{" "}
+                  <Skeleton className="h-10 w-full" />{" "}
+                  <Skeleton className="h-10 w-full" />
                 </div>
               )}
-               {topTransferError && !isTopTransferLoading && (
+              {topTransferError && !isTopTransferLoading && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error Memuat Top Transfer</AlertTitle>
+                  <AlertTitle>Error Loading Top Transfers</AlertTitle>
                   <AlertDescription>{topTransferError}</AlertDescription>
                 </Alert>
               )}
@@ -652,9 +655,9 @@ const HistoricalDashboard: React.FC = () => {
                     <TableHeader>
                       <TableRow className="hover:bg-muted/50">
                         <TableHead className="w-[140px]">Timestamp</TableHead>
-                        <TableHead>Dari</TableHead>
-                        <TableHead>Ke</TableHead>
-                        <TableHead className="text-right">Jumlah</TableHead>
+                        <TableHead>From</TableHead>
+                        <TableHead>To</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
                         <TableHead>Tx Hash</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -666,7 +669,8 @@ const HistoricalDashboard: React.FC = () => {
                             className="hover:bg-muted/50 transition-colors"
                           >
                             <TableCell className="text-xs whitespace-nowrap">
-                              {new Date(log.timestamp).toLocaleString("id-ID", {
+                              {new Date(log.timestamp).toLocaleString("en-US", {
+                                // Use en-US locale for consistency
                                 dateStyle: "medium",
                                 timeStyle: "short",
                               })}
@@ -718,7 +722,7 @@ const HistoricalDashboard: React.FC = () => {
                             colSpan={5}
                             className="text-center text-muted-foreground h-24"
                           >
-                            Tidak ada data top transfer ditemukan.
+                            No top transfer data found.
                           </TableCell>
                         </TableRow>
                       )}
@@ -729,26 +733,26 @@ const HistoricalDashboard: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Card BARU untuk Congestion (Grafik Bar) */}
+          {/* NEW Card for Congestion (Bar Chart) */}
           <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                Penggunaan Gas Limit (Congestion)
+                Gas Limit Usage (Congestion)
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
                     <p className="max-w-xs">
-                      Persentase rata-rata dari gas limit transaksi yang
-                      digunakan per hari. Nilai yang mendekati 100% dapat
-                      menunjukkan potensi congestion di jaringan.
+                      Average percentage of the transaction gas limit used per
+                      day. Values approaching 100% can indicate potential
+                      network congestion.
                     </p>
                   </TooltipContent>
                 </Tooltip>
               </CardTitle>
               <CardDescription>
-                Rata-rata gas terpakai vs limit (7 hari terakhir).
+                Average gas used vs. limit (last 7 days).
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -756,7 +760,7 @@ const HistoricalDashboard: React.FC = () => {
               {congestionError && !isCongestionLoading && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error Memuat Congestion</AlertTitle>
+                  <AlertTitle>Error Loading Congestion Data</AlertTitle>
                   <AlertDescription>{congestionError}</AlertDescription>
                 </Alert>
               )}
@@ -764,7 +768,7 @@ const HistoricalDashboard: React.FC = () => {
                 <div className="h-72" style={{ position: "relative" }}>
                   <Bar
                     data={congestionChartJsData}
-                    options={congestionChartJsOptions as any}
+                    options={congestionChartJsOptions as any} // Cast to any
                   />
                 </div>
               )}
