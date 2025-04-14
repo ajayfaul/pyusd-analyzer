@@ -7,11 +7,11 @@ import {
 import { formatUnits } from "viem"; // Hapus Hex jika tidak dipakai
 import type {
   MergedHistoricalRow,
-  ActiveAddressRow,
-  TopTransferRawRow,
+  // ActiveAddressRow,
+  // TopTransferRawRow,
   TopTransferFormattedRow,
-  CongestionRow,
-  GasPriceRow,
+  // CongestionRow,
+  // GasPriceRow,
 } from "@/types/analysis";
 
 // --- Konfigurasi (Sama) ---
@@ -48,6 +48,31 @@ if (projectId && clientEmail && privateKey) {
   // Anda bisa melempar error di sini atau menanganinya di handler GET
 }
 // --- Akhir Inisialisasi BigQuery Client ---
+
+interface ActiveAddressRow {
+  transfer_date: { value: string }; // BigQueryDate
+  active_senders: number;
+}
+
+interface TopTransferRawRow {
+  block_timestamp: { value: string }; // BigQueryTimestamp
+  transaction_hash: string;
+  log_index: number;
+  from_address: string;
+  to_address: string;
+  value: string; // Nilai mentah string
+  token_address: string;
+}
+
+interface GasPriceRow {
+  tx_date: { value: string }; // BigQueryDate
+  avg_gas_gwei: number | null; // Allow null
+}
+// FIX: Definisikan CongestionRow secara lokal
+interface CongestionRow {
+  tx_date: { value: string }; // BigQueryDate
+  avg_gas_limit_used_percent: number | null; // Allow null
+}
 
 export async function GET(request: NextRequest) {
   // Cek apakah client berhasil diinisialisasi
