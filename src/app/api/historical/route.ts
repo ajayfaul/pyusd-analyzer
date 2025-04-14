@@ -1,64 +1,65 @@
-// --- File yang Diperbarui: src/app/api/historical/route.ts ---
-// Deskripsi: Mengganti 'gas_limit' menjadi 'gas' pada query congestion.
-
 import { NextResponse, NextRequest } from "next/server";
 import {
   BigQuery,
   BigQueryDate,
   BigQueryTimestamp,
 } from "@google-cloud/bigquery";
-import { formatUnits, Hex } from "viem";
+import { formatUnits } from "viem"; // Hapus Hex jika tidak dipakai
+import type {
+  MergedHistoricalRow,
+  ActiveAddressRow,
+  TopTransferRawRow,
+  TopTransferFormattedRow,
+  CongestionRow,
+  GasPriceRow,
+} from "@/types/analysis";
 
-// --- Konfigurasi ---
+// --- Konfigurasi (Sama) ---
 const PYUSD_CONTRACT_ADDRESS_BQ = "0x6c3ea9036406852006290770bedfcaba0e23a0e8";
 const PYUSD_DECIMALS = 6;
 const LOCATION = "US";
 const GWEI_DIVISOR = 10 ** 9;
 // --- Akhir Konfigurasi ---
 
-const bigqueryClient = new BigQuery();
+// --- Inisialisasi BigQuery Client (Diubah) ---
+// Baca kredensial dari environment variables terpisah
+const projectId = process.env.GOOGLE_PROJECT_ID;
+const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
+// Ganti literal '\n' dengan newline aktual untuk private key
+const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
 
-// --- Interfaces ---
-interface MergedTransferData {
-  date: string;
-  count: number;
-  volume: number | null;
+// Buat instance BigQuery Client HANYA jika semua kredensial ada
+let bigqueryClient: BigQuery | null = null;
+if (projectId && clientEmail && privateKey) {
+  bigqueryClient = new BigQuery({
+    projectId: projectId,
+    credentials: {
+      client_email: clientEmail,
+      private_key: privateKey,
+    },
+  });
+  console.log(
+    "BigQuery Client initialized using separate environment variables."
+  );
+} else {
+  console.error(
+    "Missing required Google Cloud credentials environment variables (GOOGLE_PROJECT_ID, GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY)."
+  );
+  // Anda bisa melempar error di sini atau menanganinya di handler GET
 }
-interface ActiveAddressRow {
-  transfer_date: { value: string };
-  active_senders: number;
-}
-interface TopTransferRawRow {
-  block_timestamp: { value: string };
-  transaction_hash: string;
-  log_index: number;
-  from_address: string;
-  to_address: string;
-  value: string;
-  token_address: string;
-}
-interface TopTransferFormattedRow {
-  timestamp: string;
-  txHash: string;
-  logIndex: number;
-  fromAddress: string;
-  toAddress: string;
-  rawValue: string;
-  formattedValue: string | null;
-  tokenAddress: string;
-}
-interface GasPriceRow {
-  // Ditambahkan kembali
-  tx_date: { value: string }; // BigQueryDate
-  avg_gas_gwei: number | null; // Allow null
-}
-interface CongestionRow {
-  tx_date: { value: string }; // BigQueryDate
-  avg_gas_limit_used_percent: number | null; // Allow null
-}
-// --- Akhir Interfaces ---
+// --- Akhir Inisialisasi BigQuery Client ---
 
 export async function GET(request: NextRequest) {
+  // Cek apakah client berhasil diinisialisasi
+  if (!bigqueryClient) {
+    return NextResponse.json(
+      {
+        message: "Server configuration error: BigQuery client not initialized.",
+      },
+      { status: 500 }
+    );
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const queryType = searchParams.get("type");
   const timezone = "Asia/Jakarta";
@@ -100,7 +101,7 @@ export async function GET(request: NextRequest) {
       console.log(
         `Volume query successful, received ${volumeRows.length} rows.`
       );
-      const mergedDataMap = new Map<string, MergedTransferData>();
+      const mergedDataMap = new Map<string, MergedHistoricalRow>();
       countRows.forEach((row) => {
         const dateStr = (row.transfer_date as BigQueryDate).value;
         if (dateStr) {
@@ -132,15 +133,13 @@ export async function GET(request: NextRequest) {
         { type: "transfers", data: finalData },
         { status: 200 }
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("BIGQUERY_QUERY_ERROR (Transfers):", error);
-      return NextResponse.json(
-        {
-          message:
-            error.message || "Gagal mengambil data transfer dari BigQuery.",
-        },
-        { status: 500 }
-      );
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch transfer data from BigQuery.";
+      return NextResponse.json({ message: message }, { status: 500 });
     }
   }
   // --- Logika untuk Alamat Aktif Harian ---
@@ -165,15 +164,13 @@ export async function GET(request: NextRequest) {
         { type: "active_addresses", data: formattedRows },
         { status: 200 }
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("BIGQUERY_QUERY_ERROR (Active Addresses):", error);
-      return NextResponse.json(
-        {
-          message:
-            error.message || "Gagal mengambil data alamat aktif dari BigQuery.",
-        },
-        { status: 500 }
-      );
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch active address data from BigQuery.";
+      return NextResponse.json({ message: message }, { status: 500 });
     }
   }
   // --- Logika untuk Top Transfers ---
@@ -228,15 +225,13 @@ export async function GET(request: NextRequest) {
         { type: "top_transfers", data: formattedRows },
         { status: 200 }
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("BIGQUERY_QUERY_ERROR (Top Transfers):", error);
-      return NextResponse.json(
-        {
-          message:
-            error.message || "Gagal mengambil data top transfer dari BigQuery.",
-        },
-        { status: 500 }
-      );
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch top transfer data from BigQuery.";
+      return NextResponse.json({ message: message }, { status: 500 });
     }
   }
   // --- Logika untuk Rata-rata Gas Price Harian ---
@@ -262,32 +257,18 @@ export async function GET(request: NextRequest) {
         { type: "gas", data: formattedRows },
         { status: 200 }
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("BIGQUERY_QUERY_ERROR (Gas Price):", error);
-      return NextResponse.json(
-        {
-          message:
-            error.message || "Gagal mengambil data harga gas dari BigQuery.",
-        },
-        { status: 500 }
-      );
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch gas price data from BigQuery.";
+      return NextResponse.json({ message: message }, { status: 500 });
     }
   }
   // --- Logika untuk Congestion (Gas Limit Usage %) ---
   else if (queryType === "congestion") {
-    const congestionQuery = `
-                SELECT
-                    DATE(block_timestamp) AS tx_date,
-                    -- FIX: Ganti gas_limit menjadi gas
-                    SAFE_MULTIPLY(AVG(SAFE_DIVIDE(SAFE_CAST(receipt_gas_used AS BIGNUMERIC), SAFE_CAST(gas AS BIGNUMERIC))), 100) AS avg_gas_limit_used_percent
-                FROM \`bigquery-public-data.crypto_ethereum.transactions\`
-                WHERE DATE(block_timestamp) >= DATE_SUB(CURRENT_DATE(@timezone), INTERVAL 7 DAY)
-                  AND receipt_status = 1
-                  -- FIX: Ganti gas_limit menjadi gas
-                  AND gas > 0
-                GROUP BY tx_date
-                ORDER BY tx_date ASC;
-            `;
+    const congestionQuery = ` SELECT DATE(block_timestamp) AS tx_date, SAFE_MULTIPLY(AVG(SAFE_DIVIDE(SAFE_CAST(receipt_gas_used AS BIGNUMERIC), SAFE_CAST(gas AS BIGNUMERIC))), 100) AS avg_gas_limit_used_percent FROM \`bigquery-public-data.crypto_ethereum.transactions\` WHERE DATE(block_timestamp) >= DATE_SUB(CURRENT_DATE(@timezone), INTERVAL 7 DAY) AND receipt_status = 1 AND gas > 0 GROUP BY tx_date ORDER BY tx_date ASC; `;
     const options = {
       query: congestionQuery,
       location: LOCATION,
@@ -308,21 +289,17 @@ export async function GET(request: NextRequest) {
         { type: "congestion", data: formattedRows },
         { status: 200 }
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("BIGQUERY_QUERY_ERROR (Congestion):", error);
-      return NextResponse.json(
-        {
-          message:
-            error.message || "Gagal mengambil data congestion dari BigQuery.",
-        },
-        { status: 500 }
-      );
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch congestion data from BigQuery.";
+      return NextResponse.json({ message: message }, { status: 500 });
     }
-  }
-  // --- Akhir Logika Baru ---
-  else {
+  } else {
     return NextResponse.json(
-      { message: `Tipe query tidak dikenal: ${queryType}` },
+      { message: `Unknown query type: ${queryType}` },
       { status: 400 }
     );
   }
