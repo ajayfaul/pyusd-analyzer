@@ -5,7 +5,7 @@
   // Interface for decoded event details
   export interface DecodedEvent {
       eventName: string;
-      args: { [key: string]: any };
+      args: { [key: string]: unknown };
       tokenSymbol?: string; // Optional token symbol (e.g., "PYUSD", "WETH")
   }
 
@@ -20,7 +20,7 @@
       gas: string; // Gas provided for the call (hex string)
       value: string; // ETH value sent with the call (Wei, hex string)
       gasUsed?: number; // Estimated gas used within this call frame (numeric)
-      args?: Record<string, any>; // Heuristically decoded arguments
+      args?: Record<string, unknown>; // Heuristically decoded arguments
       isSwapRelated?: boolean; // Flag if the call seems related to a DEX swap
   }
 
