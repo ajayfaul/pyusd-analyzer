@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { SidebarProvider } from "@/components/ui/sidebar"; // <-- Import SidebarProvider
-import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme-provider"; // Asumsi path benar
+import { SidebarProvider } from "@/components/ui/sidebar"; // Asumsi path benar
+import { Toaster } from "@/components/ui/sonner"; // Asumsi path benar
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,14 +20,17 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
+        {/* FIX: Atur ThemeProvider untuk selalu light mode */}
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light" // Set default ke light
+          enableSystem={false} // Nonaktifkan preferensi sistem
+          forcedTheme="light" // Paksa tema light
           disableTransitionOnChange
         >
-          {/* Bungkus dengan SidebarProvider */}
-          <SidebarProvider defaultOpen={true}>{children}</SidebarProvider>
+          <SidebarProvider defaultOpen={true}>
+             {children}
+          </SidebarProvider>
           <Toaster />
         </ThemeProvider>
       </body>

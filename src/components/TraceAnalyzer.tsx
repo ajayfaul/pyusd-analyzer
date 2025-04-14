@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -196,10 +197,10 @@ const TraceAnalyzer: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="shadow-md">
-        <CardHeader>
-          <CardTitle>Analisis Trace Transaksi</CardTitle>
-          <CardDescription>
+      <Card className="shadow-lg border border-border/20 transition-shadow hover:shadow-xl">
+        <CardHeader className="space-y-2">
+          <CardTitle className="text-2xl font-bold">Analisis Trace Transaksi</CardTitle>
+          <CardDescription className="text-base">
             Masukkan hash transaksi untuk melihat detail eksekusinya.
           </CardDescription>
         </CardHeader>
@@ -210,15 +211,25 @@ const TraceAnalyzer: React.FC = () => {
               value={txHash}
               onChange={(e) => setTxHash(e.target.value)}
               placeholder="Masukkan Transaction Hash (contoh: 0x...)"
-              className="flex-grow text-sm sm:text-base"
+              className="flex-grow text-sm sm:text-base shadow-sm focus-visible:ring-2"
               disabled={isLoading}
             />
             <Button
               onClick={handleAnalyze}
               disabled={isLoading || !txHash}
-              className="text-sm sm:text-base"
+              className="text-sm sm:text-base font-medium transition-colors"
+              variant="default"
             >
-              {isLoading ? "Menganalisis..." : "Analyze"}
+              {isLoading ? (
+                <>
+                  <span className="animate-pulse">Menganalisis</span>
+                  <span className="animate-[bounce_1.5s_infinite] ml-[2px]">.</span>
+                  <span className="animate-[bounce_1.5s_infinite_0.2s] ml-[1px]">.</span>
+                  <span className="animate-[bounce_1.5s_infinite_0.4s] ml-[1px]">.</span>
+                </>
+              ) : (
+                "Analyze"
+              )}
             </Button>
           </div>
         </CardContent>
@@ -227,15 +238,15 @@ const TraceAnalyzer: React.FC = () => {
       <div className="min-h-[200px]">
         {isLoading && <LoadingSkeleton />}
         {result && result.summary && !error && !isLoading && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
+          <Card className="shadow-lg border border-border/20 transition-all">
+            <CardHeader className="space-y-3">
+              <CardTitle className="flex items-center justify-between text-xl">
                 <span>Hasil Analisis Trace</span>
                 {analyzedTxHash && (
                   <EtherscanLink
                     type="tx"
                     hash={analyzedTxHash}
-                    className="text-xs font-normal"
+                    className="text-sm font-medium hover:opacity-80 transition-opacity"
                   >
                     Lihat Transaksi
                   </EtherscanLink>
@@ -243,57 +254,67 @@ const TraceAnalyzer: React.FC = () => {
               </CardTitle>
               <Alert
                 variant={result.summary.failed ? "destructive" : "default"}
-                className="mt-2"
+                className={`mt-2 border-2 ${result.summary.failed ? 'border-destructive/50' : 'border-green-500/50'} shadow-sm`}
               >
                 {result.summary.failed ? (
-                  <AlertCircle className="h-4 w-4" />
+                  <AlertCircle className="h-5 w-5" />
                 ) : (
-                  <CheckCircle2 className="h-4 w-4" />
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
                 )}
-                <AlertTitle>
+                <AlertTitle className="font-semibold">
                   {result.summary.failed
                     ? "Transaksi Gagal"
                     : "Transaksi Sukses"}
                 </AlertTitle>
-                <AlertDescription className="text-xs break-all">
+                <AlertDescription className="text-sm break-all mt-1">
                   Return Value:
                   <HexDisplay value={result.summary.returnValue || "N/A"} />
                 </AlertDescription>
               </Alert>
             </CardHeader>
             <CardContent className="space-y-4 text-sm sm:text-base">
-              <div>
-                <p>
-                  <strong className="font-semibold">
-                    Total Gas Digunakan:
-                  </strong>
-                  {result.summary.totalGasUsed.toLocaleString()}
-                </p>
-                <p className="inline-flex items-center gap-1">
-                  <strong className="font-semibold">
-                    Kedalaman Panggilan Maks.:
-                  </strong>
-                  {result.summary.maxDepth}
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <HelpCircle className="h-4 w-4 text-gray-500" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Jumlah maksimum panggilan internal bersarang.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="p-3 rounded-lg bg-background/50 border border-border/20 shadow-sm">
+                  <p className="flex items-center justify-between">
+                    <strong className="font-semibold text-muted-foreground">
+                      Total Gas Digunakan
+                    </strong>
+                    <span className="font-mono text-primary">
+                      {result.summary.totalGasUsed.toLocaleString()}
+                    </span>
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg bg-background/50 border border-border/20 shadow-sm">
+                  <p className="flex items-center justify-between">
+                    <span className="flex items-center gap-1">
+                      <strong className="font-semibold text-muted-foreground">
+                        Kedalaman Panggilan Maks.
+                      </strong>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-4 w-4 text-muted-foreground/70" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Jumlah maksimum panggilan internal bersarang.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </span>
+                    <span className="font-mono text-primary">
+                      {result.summary.maxDepth}
+                    </span>
+                  </p>
+                </div>
               </div>
               {Object.keys(result.summary.opCodeCounts).length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold mb-2">
                     Distribusi Opcode (Top 10)
                   </h3>
-                  <Table>
+                  <Table className="border border-border/20 rounded-lg overflow-hidden">
                     <TableHeader>
-                      <TableRow>
-                        <TableHead>Opcode</TableHead>
-                        <TableHead className="text-right">Jumlah</TableHead>
+                      <TableRow className="hover:bg-muted/5">
+                        <TableHead className="font-semibold">Opcode</TableHead>
+                        <TableHead className="text-right font-semibold">Jumlah</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -304,9 +325,9 @@ const TraceAnalyzer: React.FC = () => {
                         )
                         .slice(0, 10)
                         .map(([op, count]) => (
-                          <TableRow key={op}>
-                            <TableCell className="font-medium">{op}</TableCell>
-                            <TableCell className="text-right">
+                          <TableRow key={op} className="hover:bg-muted/5 transition-colors">
+                            <TableCell className="font-medium font-mono">{op}</TableCell>
+                            <TableCell className="text-right font-mono">
                               {Number(count).toLocaleString()}
                             </TableCell>
                           </TableRow>
