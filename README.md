@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Overview
+## Overview 💡
 
 Standard blockchain explorers provide valuable surface-level information about transactions (sender, receiver, value, basic logs). However, understanding the *internal execution flow* of complex smart contract interactions, especially those involving stablecoins like PYUSD within DeFi protocols, requires deeper analysis. Accessing computationally intensive RPC methods like `debug_traceTransaction` needed for this analysis is often cost-prohibitive.
 
@@ -19,7 +19,7 @@ This project tackles this problem by:
 
 This tool empowers developers, analysts, and researchers to gain a much deeper understanding of PYUSD transactions and the broader network context without incurring high RPC costs.
 
-## Features
+## Features 🤖
 
 **1. Trace Analyzer:**
 
@@ -46,7 +46,7 @@ This tool empowers developers, analysts, and researchers to gain a much deeper u
 * **Daily Average Gas Price:** Line chart displaying the average gas price (in Gwei) for successful transactions on Ethereum over the last 7 days (Data from BigQuery `transactions`).
 * **Daily Average Gas Limit Usage:** Bar chart showing the average percentage of the gas limit consumed by successful transactions each day over the last 7 days, indicating network congestion or efficiency (Data from BigQuery `transactions`).
 
-## How It Works
+## How It Works 🔍
 
 ### Trace Analyzer (`debug_traceTransaction`)
 
@@ -78,7 +78,7 @@ The historical dashboard leverages GCP's public BigQuery datasets for Ethereum.
 4.  **API Response:** The formatted data is sent back to the frontend as a JSON object, including the `type` field.
 5.  **Frontend Display:** The `HistoricalDashboard.tsx` component receives the data for each analysis type, updates its state, and renders the information using Shadcn UI Cards and Tables, and Chart.js charts (`Line`, `Bar`). Loading and error states are handled for each data fetch.
 
-## Technology Stack
+## Technology Stack 🌐
 
 * **Framework:** Next.js (App Router)
 * **Language:** TypeScript
@@ -90,7 +90,7 @@ The historical dashboard leverages GCP's public BigQuery datasets for Ethereum.
 * **Core Libraries:** React, viem (for ABI parsing, decoding, formatting)
 * **Deployment (Suggested):** Vercel / Netlify
 
-## Setup and Installation (Local Development)
+## Setup and Installation (Local Development) ⚙️
 
 1.  **Prerequisites:**
     * Node.js (LTS version recommended)
@@ -129,7 +129,7 @@ The historical dashboard leverages GCP's public BigQuery datasets for Ethereum.
         GOOGLE_PROJECT_ID=<your_gcp_project_id>
         GOOGLE_CLIENT_EMAIL=<your_service_account_email>
         # Copy the *entire* private key from the JSON file, preserving newlines
-        GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_MULTI_LINE_PRIVATE_KEY\n-----END PRIVATE KEY-----\n"
+        GOOGLE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nYOUR_MULTI_LINE_PRIVATE_KEY\n-----END PRIVATE KEY-----\n
 
         # Method 2: Using Credentials File Path (Easier for Local Dev ONLY)
         # Ensure the JSON file is at this path relative to your project root
@@ -147,7 +147,7 @@ The historical dashboard leverages GCP's public BigQuery datasets for Ethereum.
     ```
     Open [http://localhost:3000](http://localhost:3000) (or your configured port) in your browser.
 
-## Usage
+## Usage 🚀
 Here are the url of deployed app:  **[PYUSD Analyzer](https://pyusd-analyzer.vercel.app/)**
 
 1.  **Navigate:** Use the sidebar menu to switch between "Trace Analyzer" and "Historical Data" views.
@@ -161,7 +161,7 @@ Here are the url of deployed app:  **[PYUSD Analyzer](https://pyusd-analyzer.ver
     * Review the tables and charts for insights.
 
 
-## Inspiration & Differences
+## Inspiration & Differences 🧠
 
 This project was developed independently for the GCP+PYUSD Hackathon. While general block explorers (Etherscan), transaction tracers (usually desktop tools or paid services), and DeFi dashboards (DefiLlama, Dune) exist, this project differentiates itself by:
 
@@ -171,7 +171,7 @@ This project was developed independently for the GCP+PYUSD Hackathon. While gene
 4.  Offering analysis on **both Mainnet and Sepolia**.
 
 
-## Future Improvements
+## Future Improvements ✨
 
 * More robust function argument decoding (potentially integrating ABIs).
 * Decoding more event types beyond standard Transfers.
@@ -181,6 +181,6 @@ This project was developed independently for the GCP+PYUSD Hackathon. While gene
 * Enhanced chart interactivity and customization.
 * API endpoint for programmatic access to analysis results.
 
-## License
+## License ⚖️
 
 This project is licensed under the [MIT License](LICENSE).
